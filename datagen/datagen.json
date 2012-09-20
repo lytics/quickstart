@@ -1,0 +1,10 @@
+{
+	"url":"http://localhost:8133/c/12"
+	, "fields":[
+		{"name":"_uid","cardinality":1000,"datatype":"s"},
+		{"name":"temp","cardinality":100,"datatype":"i"},
+		{"name":"email","values":["email@email.com","email2@email.com","email3@email.com","email4@email.com"],"every":5},
+		{"name":"fbuid","values":["880465005","880465009","880465037","880465042","880465044","880465047"],"every":10},
+		{"name":"p.name","values":["araddon/m2go","araddon/cass","joyent/node","visionmedia/express"],"every":10}
+	]
+}

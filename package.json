@@ -1,0 +1,12 @@
+ {
+    "name":"lyticsquickstart"
+    , "version":"0.0.1"
+    , "dependencies":{
+      "express":"2.5.x"
+      , "ejs":""
+    },
+    "engines": {
+      "node": "0.6.x",
+      "npm": "1.1.4"
+    }
+ }
