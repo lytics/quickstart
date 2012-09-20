@@ -1,5 +1,5 @@
 {
-	"url":"http://localhost:8133/c/12"
+	"url":"http://mydomain.com/path"
 	, "fields":[
 		{"name":"_uid","cardinality":1000,"datatype":"s"},
 		{"name":"temp","cardinality":100,"datatype":"i"},

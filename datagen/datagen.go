@@ -19,13 +19,7 @@ import (
 
 /* 
 go clean && go build
-./datagen -ct=1000 -persec=10  
-
-thoughts
-- if we produce random fields, they won't have queries, and won't get persisted/counted.
-
-TODO
-- produce data from known fields (with specified cardinality)
+./datagen -ct 1000 -persec 10  -file si.json
 
 
 */
@@ -33,17 +27,20 @@ TODO
 var (
 	maxCt   int
 	perSec  int
-	verbose bool
+	quiet   bool
+	file    string
 	dataGen *DataGen
 )
 
 func init() {
-	flag.IntVar(&maxCt, "ct", 10, " ct")
-	flag.IntVar(&perSec, "persec", 10, " num per sec")
+	flag.IntVar(&maxCt, "ct", 10, "Total number of events to send")
+	flag.IntVar(&perSec, "persec", 10, "Number of Events per second to send")
+	flag.BoolVar(&quiet, "q", false, "Quiet Logging? (default = verbose)")
+	flag.StringVar(&file, "file", "datagen.json", "Json File defining data generation definition")
 }
 
 func LoadDataGen() bool {
-	if jsonb, err := ioutil.ReadFile("datagen.json"); err == nil {
+	if jsonb, err := ioutil.ReadFile(file); err == nil {
 		if err = json.Unmarshal(jsonb, &dataGen); err != nil {
 			Log(ERROR, err)
 			return false
@@ -136,7 +133,11 @@ func RunDataGen() {
 
 func main() {
 	flag.Parse()
-	SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile), "debug")
+	logLevel := "debug"
+	if !quiet {
+		logLevel = "error"
+	}
+	SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile))
 	if LoadDataGen() {
 		RunDataGen()
 	}
