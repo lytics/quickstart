@@ -8,6 +8,10 @@ Install:
 
    npm install   # from root of this folder
 
+   # run
+   node app.js
+
+
 Data Generator
 ----------------------------
 In order to use the analyzed data, it is often helpful to create fake data in advance of having collected it.  This tool

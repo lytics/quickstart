@@ -105,7 +105,7 @@ Backbone.sync = function(method, model, options) {
   var mtoHtml = function(name,data) {
     try {
       if (!(name in templates)){
-        var $el = $e(name)
+        var $el = $(name)
         if ($el){
           templates[name] = $el[0].innerHTML;
         }
@@ -139,7 +139,7 @@ Backbone.sync = function(method, model, options) {
       }
     },
     toggle:function(){
-      $e(this.el).toggle();
+      $(this.el).toggle();
       return this;
     },
     edit: function(id,more){
@@ -171,10 +171,10 @@ Backbone.sync = function(method, model, options) {
       )
     },
     show:function(){
-      $e(this.el).show();
+      $(this.el).show();
     },
     hide:function(){
-      $e(this.el).hide();
+      $(this.el).hide();
     }
   }
   _.extend(app.ModuleView.evt, Backbone.Events);
@@ -192,20 +192,6 @@ Backbone.sync = function(method, model, options) {
       if (!this.loaded){
         this.fetch()
         this.show()
-        var questions = [
-          {id:1,text:"How does Effect",filter:[["top stories"],["1"]]}
-        ]
-        var html = mtoHtml("#dimQuestionTemplate",{list:questions})
-        $("#dimensionalQuestions", this.el).html(html)
-        $("#dimensionalQuestions li", this.el).click(function(e){
-            var id = $(e.currentTarget).attr("data-id")
-            _.each(questions, function(r){
-              if (r.id == id) {
-                self.filter(r.filter)
-              }
-            })
-            return false;
-        });
       }
     },
     show:function(){
@@ -239,14 +225,14 @@ Backbone.sync = function(method, model, options) {
         , formatTime = d3.time.format("%I:%M %p");
 
       var vizTop = 0
-        , chartsPos = $e("#tab-pivot").offset()
-        , bodyPos = $e("body").offset()
-        , bodyScroll = $e("body").scrollTop();
+        , chartsPos = $("#tab-pivot").offset()
+        , bodyPos = $("body").offset()
+        , bodyScroll = $("body").scrollTop();
 
-      $e(document).bind("scroll",function(e){
+      $(document).bind("scroll",function(e){
         //console.log("in bind scroll", e)
-        //console.log($e("body").scrollTop())
-        //console.log($e("#charts").offset())
+        //console.log($("body").scrollTop())
+        //console.log($("#charts").offset())
       })
       // A nest operator, for grouping the flight list.
       var nestByDate = d3.nest()
@@ -453,21 +439,21 @@ Backbone.sync = function(method, model, options) {
           var lbl
             , e = d3.event
             , posX = e.x + parseInt(o.barWidth)
-            , bodyScroll = $e("body").scrollTop()
+            , bodyScroll = $("body").scrollTop()
 
-          $e(".lbartip").remove()
+          $(".lbartip").remove()
           if (o.hoverFormat) {
-            lbl = $e('<div class="lbartip">' + o.hoverFormat(d.key)  + ": " + d.value + '</div>')
+            lbl = $('<div class="lbartip">' + o.hoverFormat(d.key)  + ": " + d.value + '</div>')
                   .css({"top": e.y + "px","left":posX + "px"})
           } else {
-            lbl = $e('<div class="lbartip">' + d.key + ": " + d.value + '</div>')
+            lbl = $('<div class="lbartip">' + d.key + ": " + d.value + '</div>')
                   .css({"top": e.y + "px","left":posX + "px"})
           }
           
-          $e("body").append(lbl)
+          $("body").append(lbl)
         }
         function barHoverOut(d) {
-          $e(".lbartip").remove()
+          $(".lbartip").remove()
         }
         function getAll() {
           return o.limit? group.top(o.limit) : group.all() 
@@ -850,104 +836,14 @@ Backbone.sync = function(method, model, options) {
     isRendered:false,
     d : {},
     charts : {
-      views : new lio.MorrisChart({title:"Views",h:150, target:"#exploreViews"
-          , ykeys:['1'], labels:["Views: "], xkey:"t", parseTime: true, xLabels: "day"
-          , dateFormat: function(x) {return formatDate(new Date(x)); }
-        })
-      , newu : new lio.MorrisChart({title:"New Users",h:150, target:"#exporeNewUsers"
-          , ykeys:['1'], labels:["New Users: "], xkey:"t", parseTime: true, xLabels: "day"
-          , dateFormat: function(x) {return formatDate(new Date(x)); }
-        })
-      , shares : new lio.MorrisChart({title:"Shares",h:150, target:"#exploreShares"
-          , ykeys:['1'], labels:["Shares: "], xkey:"t", parseTime:true,  xLabels: "day"
-          , dateFormat: function(x) {return formatDate(new Date(x)); }
-        })
-      , users : new lio.MorrisChart({title:"Users",h:150, target:"#exploreUsers"
-          , ykeys:['1'], labels:["Users: "], xkey:"t", parseTime:true,  xLabels: "day"
-          , dateFormat: function(x) {return formatDate(new Date(x)); }
-        })
-      , userviews : new lio.MorrisChart({title:"Views/User",h:150, target:"#exploreViewsPerUser"
-          , ykeys:['1'], labels:["Views: "], xkey:"t", parseTime:true,  xLabels: "day"
-          , dateFormat: function(x) {return formatDate(new Date(x)); }
-        })
-      , sharehist : new lio.BarGraph2({target:"#dashShareHist", h: 150
-        , title:"Shares by Previous Shares"
-        , style:function(){return "width:" + ((windowWidth / 3) -50) + "px;word-wrap: break-word;"}
-      })
-      , visithist : new lio.BarGraph2({target:"#dashVisitHist", h: 150
-        , title:"Visits by Previous Visit Ct"
-        , style:function(){return "width:" + ((windowWidth / 3) -50) + "px;word-wrap: break-word;"}
-      })
-    },
-    events: {
-      "click    .jsfilter input"           : "applyFilterCB",
-      "click    .jsAllFilters"           : "allfilters"
     },
     initialize:function(){
       if (!this.loaded){
-        $("#dashboardtablink").tab('show');
         this.fetch();
       }
     },
-    allfilters:function(e){
-      if (this.exfilters){
-        this.exfilters = false
-        $("#exploreExtraFilters").css("visibility","hidden")
-      } else {
-        $("#exploreExtraFilters").css("visibility","visible")
-        this.exfilters = true
-      }
-      return false
-    },
-    setupFilters:function(){
-      var self = this
-      _.each(self.d,function(d,name){
-        if (!lio.isArray(d.activefilters)){
-          self.d[name].activefilters = []
-        }
-      })
-          },
-    applyFilterBG:function(name, val, chkd){
-      this.applyFilter(name,val,chkd)
-    },
-    applyFilter:function(name, val, chkd){
-      var self = this
-      if (self.d[name].activefilters.length > 0){
-        self.d[name].filter()
-      }
-      if (chkd) {
-        if (name in self.d) {
-          self.d[name].activefilters.push(val)
-          //self.d[name].filter(val)
-        }
-      } else {
-        self.d[name].activefilters = _.filter(self.d[name].activefilters, function(v){ return v != val });
-      }
-      console.log(name, self.d[name].activefilters)
-      if (self.d[name].activefilters.length == 0){
-        self.d[name].filter()
-      } else {
-        self.d[name].filter.apply(self.d[name], self.d[name].activefilters)
-      }
-      self.update()
-      //data.total.filter([0, 100], 190, [200, 300]);
-    },
-    applyFilterCB:function(e){
-      var self = this, name, val, chkd
-        , $el = $(e.currentTarget)
-      if ($el) {
-        val = $el.attr("value")
-        name = $el.attr("name")
-        chkd = $el.is(':checked')
-        $el.parent().parent().parent().find("input").attr("checked", false)
-        if (chkd) {
-          $el.attr('checked',true)
-        }
-        self.applyFilter(name,val, chkd)
-      }
-    },
     show:function(){
-      $("#dashboardtablink").tab('show');
+      //$("#dashboardtablink").tab('show');
     },
     render: function() {
       //_.each(this.charts, function(c, n){c.render()});
@@ -956,14 +852,43 @@ Backbone.sync = function(method, model, options) {
       var self = this, data, fields;
       lio.api.getc('q/summary', {t:TIMESPAN}, function(json){
         data  = lio.jsonShaper(json)
-        //self.data = data
         fields = data.fields()
+        // Assuming we have a multi-dimensional query or are going to ignore dimensions and group by date 
         self.d.date = data.dimension("period", function(d) { return d[fields["_ts"]].ts * 1000; })
+        
+
+        // for data that was aggregated using Distinct, we have to treat it a little differently
+        // we do addReduceDSum (Distinct Sum) 
+        // we want to save this self.d.sna now because we will use it later if we filter data
+        self.d.sna = self.d.date.group().addReduceDSum("sna")
+        // Then we flatten it for morris.js which returns 
+        //   {keys:["each","keyval","value"],rows[{"key":1234,each:val,keyval:val}]}
+        // this will be called each time we interact/filter the graph 
+        self.d.snadata = self.d.sna.ds().fo().out()  
+        console.log(self.d.snadata)
+        // draw morris graph
+        Morris.Line({
+          element: 'morris1'
+          , data: self.d.snadata.rows
+          , xkey: 'key'
+          , ykeys: self.d.snadata.keys
+          , labels: self.d.snadata.keys
+          , dateFormat: function(x) {return formatDate(new Date(x)); }
+        });
+
+        // simpler one, 
         self.d.views = self.d.date.group().addReduceSum("ct")
-        self.d.shares = self.d.date.group().addReduceSum("shares")
-        self.d.users = self.d.date.group().addReduceSum("uuct")
-        self.d.newu = self.d.date.group().addReduceSum("newu")
-       
+        // format data to fformat morris.js understands
+        //   [{t:1234444,"1":value}]
+        var viewct = self.d.views.ds().too1().out()  
+        console.log(viewct)
+        Morris.Line({
+          element: 'morrisct',
+          data: viewct,
+          xkey: 't',
+          ykeys: ['1'],
+          labels: ['Total Ct']
+        });
 
         self.loaded = true
         self.evt.trigger("loaded")
@@ -971,10 +896,8 @@ Backbone.sync = function(method, model, options) {
           self.isRendered = true;
           self.render();
         }
-  
-        self.update()
-        self.setupFilters()
       });
+      /*
       lio.api.getc('q/sharing', {t:TIMESPAN}, function(json){
           if (json.data && json.data.length > 0){
             var ds = lio.jsonShaper(json)
@@ -1032,7 +955,7 @@ Backbone.sync = function(method, model, options) {
             }).render()
           }
       });
-
+      */
     },
     update: function(){
       var self = this, views, shares, users, newusers, userviews;
@@ -1075,17 +998,11 @@ Backbone.sync = function(method, model, options) {
   */
   app.AppVizView = Backbone.View.extend( {
     modules : {
-      authors: new app.AuthorsManagerView()
-      , pivot: function() {return new app.PivotView()} 
+      pivot: function() {return new app.PivotView()} 
       , dashboard: function() {return new app.DashboardView()}
-      , users: function() {return new app.UserView()}
-      , articles: function() {return new app.ArticleView()}
     },
     actions : {
       tag: null
-    },
-    events: {
-      "click    .jsexpfilter"           : "exploreFilters",
     },
     curModule: null,
     // on creation, load up code mirror js
@@ -1095,11 +1012,11 @@ Backbone.sync = function(method, model, options) {
       return this;
     },
     exploreFilters: function(e) {
-      $("#appViz .appPanel").hide();
+      //$("#appViz .appPanel").hide();
       return false
     },
     changePanels: function(e) {
-      $("#appViz .appPanel").hide();
+      //$("#appViz .appPanel").hide();
     },
     routeToModule: function(module,method,id,more){
       if (!method) method = "show"
@@ -1118,7 +1035,7 @@ Backbone.sync = function(method, model, options) {
       }
     }
   });
-  var appViz = new app.AppVizView({ el: $("#appViz") });
+  var appViz = new app.AppVizView({ el: $("#demoViz") });
 
   // start app router (backbone.js)
   var AppRouter = Backbone.Router.extend({
@@ -1140,12 +1057,11 @@ Backbone.sync = function(method, model, options) {
         }
     });
 
-  $e.domReady(function () {
+  $(doc).ready(function () {
     setTimeout(function(){
       app.router = new AppRouter;
       Backbone.history.start();
     }, 500);
-    
   })
 
 

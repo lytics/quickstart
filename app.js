@@ -19,7 +19,7 @@ app.configure(function(){
   app.use(express.static(__dirname + '/css'));
   app.use(express.static(__dirname + '/images'));
   app.use(express.static(__dirname + '/js'));
-  app.use(express.static(__dirname + '/'));
+  app.use(express.static(__dirname + '/'));// also allow serving /views/page.html statically
   app.set('views', __dirname + '/views');
   app.register('html', require('ejs'));
   app.set('view engine', 'html');

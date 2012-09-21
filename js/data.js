@@ -312,9 +312,11 @@ function dataShaper(group,raw, fields){
     data = d
     return shaper
   };
+  // the end of a chaining series, return the data not the object
   shaper.out = function() {
     return data;
   };
+  // pick specific columns
   shaper.pickFields = function(fld, def){
     var out = [], val, field = fields[fld];
     all = group.all()
@@ -343,10 +345,12 @@ function dataShaper(group,raw, fields){
     data = out
     return shaper
   };
+  // Sort Array by given column position
   shaper.sorta = function(f) {
     data = _.sortBy(data,function(d){return - d[f]})
     return shaper
   };
+  // To array
   shaper.toa = function() {
     var out = [];
     all = group.all()
@@ -365,6 +369,26 @@ function dataShaper(group,raw, fields){
     data = out
     return shaper
   };
+  // Flatten an object (something created with "Distinct") into 
+  // single flat object and list of keys
+  shaper.fo = function() {
+    var out = {keys:[],rows:[]}
+      , keys = {}
+      , row = {}
+    all = group.all()
+    all.forEach(function(d){
+      row = {key:d.key}
+      _.each(d.value, function(val,key){
+        if (!(key in keys)) keys[key] = key
+        row[key] = val
+      })
+      out.rows.push(row)
+    })
+    out.keys = _.keys(keys);
+    data = out
+    return shaper
+  };
+  // Object To Array   with array [key,value] format
   shaper.otoa = function() {
     var out = [];
     all = group.all()
@@ -385,6 +409,7 @@ function dataShaper(group,raw, fields){
     data = out
     return shaper
   };
+  // Array To Object
   shaper.atoo = function() {
     var out = [], row;
     data.forEach(function(d, xct){
@@ -430,6 +455,7 @@ function dataShaper(group,raw, fields){
     data = out
     return shaper
   };
+  // Cross Filter to Object
   shaper.cftoo = function() {
     var out = [], row, flds = [["value",0]];
     if (arguments.length > 0) {

@@ -1,7 +1,6 @@
 This is a data-generator, for creating data to be http posted to a data-collector.
 
-It allows you to create a json file specifying fields, cardinality, frequency, etc
-
+It uses a json file specifying fields, cardinality, frequency, of data to send
 
 Usage:
 	

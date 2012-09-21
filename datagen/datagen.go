@@ -19,7 +19,8 @@ import (
 
 /* 
 go clean && go build
-./datagen -ct 1000 -persec 10  -file si.json
+
+./datagen -ct 1000 -persec 10  -file demo.json
 
 
 */
@@ -53,9 +54,7 @@ func LoadDataGen() bool {
 }
 
 func Send(aid string, data []string) {
-
-	var qs string = strings.Join(data, "&")
-	qs = url.QueryEscape(qs)
+	qs := url.QueryEscape(strings.Join(data, "&"))
 	Debug(dataGen.Url, " body = ", qs, data)
 	buf := bytes.NewBufferString(qs)
 	_, err := http.Post(dataGen.Url, "application/x-www-form-urlencoded", buf)
@@ -65,20 +64,20 @@ func Send(aid string, data []string) {
 }
 
 type Field struct {
-	Name string
-	//Url         string
+	Name        string
 	Cardinality int
 	Values      []string
 	Datatype    string
 	Every       int
 	Description string
 }
+
 type DataGen struct {
 	Url    string
 	Fields []*Field
 }
 
-func MD(d *Field) string {
+func (d *Field) Val() string {
 	if len(d.Values) > 0 {
 		rv := rand.Intn(len(d.Values))
 		return d.Values[rv]
@@ -101,11 +100,9 @@ func RunDataGen() {
 
 	totalCt := 0
 
-	Debug("max ct loop = ", maxCt)
-	Debug("per sec = ", perSec)
+	Debugf("Gen Data: maxct=%d persec=%d, file=%s q=%v", maxCt, perSec, file, quiet)
 
 	for _ = range timer.C {
-		Debug("inside loop")
 		go func() {
 			data := make([]string, 0)
 			re := 0
@@ -113,9 +110,8 @@ func RunDataGen() {
 				if f.Every > 0 {
 					re = rand.Intn(f.Every)
 				}
-				//debug("rand val ", f.Every, " val = ", re)
 				if f.Every == 0 || re == 0 {
-					fv := f.Name + "=" + MD(f)
+					fv := f.Name + "=" + f.Val()
 					data = append(data, fv)
 				}
 			}
@@ -128,16 +124,15 @@ func RunDataGen() {
 			break
 		}
 	}
-
 }
 
 func main() {
 	flag.Parse()
 	logLevel := "debug"
-	if !quiet {
+	if quiet {
 		logLevel = "error"
 	}
-	SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile))
+	SetLogger(log.New(os.Stderr, "", log.Ltime|log.Lshortfile), logLevel)
 	if LoadDataGen() {
 		RunDataGen()
 	}
