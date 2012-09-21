@@ -3,13 +3,16 @@ quickstart
 
 Quickstart For getting up and running building Visualizations using Lytics.io
 
+This demo uses a "demo" account that has data in it and is public.
 
-Install:
 
-   npm install   # from root of this folder
+Install node packages:
 
-   # run
-   node app.js
+	# requires npm, node 
+	npm install   # from root of this folder install dependencies from package.json
+
+	# run web app
+	node app.js
 
 
 Data Generator
