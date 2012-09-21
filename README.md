@@ -21,7 +21,7 @@ In order to use the analyzed data, it is often helpful to create fake data in ad
 
 
 
-Install:
+Build/Run generator:
 	
 	install go, see http://golang.org
 

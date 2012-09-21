@@ -831,12 +831,9 @@ Backbone.sync = function(method, model, options) {
 
 
   app.DashboardView = Backbone.View.extend(lio.extend({
-    el: $("#tab-dashboard"),
-    exfilters : false,
+    el: $("#tbd"),
     isRendered:false,
     d : {},
-    charts : {
-    },
     initialize:function(){
       if (!this.loaded){
         this.fetch();
@@ -853,10 +850,10 @@ Backbone.sync = function(method, model, options) {
       lio.api.getc('q/summary', {t:TIMESPAN}, function(json){
         data  = lio.jsonShaper(json)
         fields = data.fields()
+        
         // Assuming we have a multi-dimensional query or are going to ignore dimensions and group by date 
         self.d.date = data.dimension("period", function(d) { return d[fields["_ts"]].ts * 1000; })
         
-
         // for data that was aggregated using Distinct, we have to treat it a little differently
         // we do addReduceDSum (Distinct Sum) 
         // we want to save this self.d.sna now because we will use it later if we filter data
@@ -897,98 +894,6 @@ Backbone.sync = function(method, model, options) {
           self.render();
         }
       });
-      /*
-      lio.api.getc('q/sharing', {t:TIMESPAN}, function(json){
-          if (json.data && json.data.length > 0){
-            var ds = lio.jsonShaper(json)
-              , flds = ds.fields()
-              , shares = [0,0,0,0]
-              , visits = [0,0,0,0]
-              , sharef = flds["preshares"]
-              , visitf = flds["visitct"]
-              , shareh
-              , visith
-              , tohlabel = function(l) {
-                  l.push(l[l.length - 1] + " and up")
-                  for (var i = l.length - 2; i >= 1; i--) {
-                    l[i] = l[i - 1] + " to " + l[i]
-                  };
-                  l[0] = "0" 
-                  return l
-              }
-            json.meta.measures.forEach(function(r,i){
-              if (r.Id == "preshares"){
-                shareh = tohlabel(r.Args.split(","))
-              }
-              if (r.Id == "preshares"){
-                visith = tohlabel(r.Args.split(","))
-              }
-            })
-            json.data.forEach(function(p,pi){
-              p.rows.forEach(function(r,i){
-                if (r && r[sharef] && r[sharef].length) {
-                  r[sharef].forEach(function(d,y){
-                    shares[y] += d
-                  })
-                }
-                if (r && r[visitf] && r[visitf].length) {
-                  r[visitf].forEach(function(d,y){
-                    visits[y] += d
-                  })
-                }
-              })
-            })
-
-            shares = _.map(shares,function(r,i){
-              return [shareh[i], r]
-            })
-            visits = _.map(visits,function(r,i){
-              return [visith[i], r]
-            })
-            console.log(shares)
-            console.log(visits)
-            self.charts.sharehist.prepare(function(){
-              return shares
-            }).render()
-            self.charts.visithist.prepare(function(){
-              return visits
-            }).render()
-          }
-      });
-      */
-    },
-    update: function(){
-      var self = this, views, shares, users, newusers, userviews;
-      views = self.d.views.ds().too1().out()  
-      shares = self.d.shares.ds().too1().out()  
-      users = self.d.users.ds().too1().out()  
-      newusers = self.d.newu.ds().too1().out()
-      userviews = lio.odiv(views, users)
-      //console.log(shares)
-      //console.log(views)
-      console.log(newusers)
-      self.charts.shares.prepare(function(){
-        return shares;
-      }).render()
-      self.charts.views.prepare(function(){
-        return views;
-      }).render()
-      self.charts.users.prepare(function(){
-        return users;
-      }).render()
-      self.charts.newu.prepare(function(){
-        return newusers;
-      }).render()
-      self.charts.userviews.prepare(function(){
-        return userviews;
-      }).render()
-    },
-    view: function(id){
-      var self = this;
-      if (id != undefined) {
-        self.author.filter(id)
-      }
-      self.update()
     }
   },app.ModuleView));
 
