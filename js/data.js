@@ -138,109 +138,9 @@ function cfHelper(ds, name, fields){
 
   //console.log("creating cfhelper for " + cf.idx + " name= " + name)
 
-  function group2(){
-    var ds
-      , group = dim.__group()
-    if (!group.hasOwnProperty("addReduceSum")) {
-      // replace original group
-      group = lio.extend(group,{
-        ds: function() {
-          if (!group.hasOwnProperty("_ds")){
-            //console.log("creating shaper for " + cf.idx + " name= " + name)
-            group._ds = dataShaper(group, undefined, fields)
-          } 
-          return group._ds
-        },
-        addReduceSumDiv : function(field,field2) {
-          var fldPos = fields[field]
-            , fldPos2 = fields[field2]
-          group.reduceSum(function(d) { 
-            return d[fldPos2] > 0 ? d[fldPos] / d[fldPos2] : 0; 
-          })
-          return group
-        }
-      , addReduceSum : function(field) {
-          var fldPos = fields[field]
-          group.reduceSum(function(d) { 
-            return d[fldPos]; 
-          })
-          return group
-        }
-      , addReduceDSum : function(field) {
-          fieldPosition = fields[field]
-          var d;
-          group.reduce(
-            function reduceAdd(dmap, v) {
-              d = v[fieldPosition]
-              for (p in d){
-                if (!(p in dmap)){
-                  dmap[p] = d[p]
-                } else {
-                  dmap[p] += d[p]
-                }
-              }
-              return dmap;
-            },
-            function reduceRemove(dmap, v) {
-              d = v[fieldPosition]
-              for (p in d){
-                if (!(p in dmap)){
-                  //dmap[p] = d[p]
-                } else {
-                  dmap[p] -= d[p]
-                }
-              }
-              return dmap;
-            },
-            function reduceInitial() {
-              return {};
-            }
-          )
-          //all = group.all()
-          /*d = {}
-          all.forEach(function(d){
-            _.each(d.value, function(val,key){
-              if (!(key in d)){
-                d[key] = val
-              } else {
-                d[key] += val
-              }
-            })
-          })
-          */
-          return group
-        }
-      , addReduceAvg : function(field) {
-          var fldPos = fields[field]
-          group.reduce(
-            function reduceAdd(p, v) {
-              p.ct ++
-              p.t += v[fldPos]
-              return p;
-            },
-            function reduceRemove(p, v) {
-              p.ct --
-              p.t -= v[fldPos]
-              return p;
-            },
-            function reduceInitial() {
-              return {ct:0,t:0};
-            }
-          )
-          all = group.all()
-          all.forEach(function(d){
-            d.value = d.value.t / d.value.ct
-          })
-          return group
-        }
-      , g: function() {
-          return dim.__group()
-        }
-      })
-    }
-    return group
-  }
   function dimension2(dname, fn) {
+    var dim;
+
     if (arguments.length == 2) {
       dim = cf.__dimension(fn)
     } else if (arguments.length == 1 && lio.isFn(dname)) {
@@ -248,6 +148,110 @@ function cfHelper(ds, name, fields){
     } else {
       dim = cf.__dimension()
     }
+
+    function group2(){
+      var ds
+        , group = dim.__group()
+      if (!group.hasOwnProperty("addReduceSum")) {
+        // replace original group
+        group = lio.extend(group,{
+          ds: function() {
+            if (!group.hasOwnProperty("_ds")){
+              //console.log("creating shaper for " + cf.idx + " name= " + name)
+              group._ds = dataShaper(group, undefined, fields)
+            }
+            return group._ds
+          },
+          addReduceSumDiv : function(field,field2) {
+            var fldPos = fields[field]
+              , fldPos2 = fields[field2]
+            group.reduceSum(function(d) {
+              return d[fldPos2] > 0 ? d[fldPos] / d[fldPos2] : 0;
+            })
+            return group
+          }
+        , addReduceSum : function(field) {
+            var fldPos = fields[field]
+            group.reduceSum(function(d) {
+              return d[fldPos];
+            })
+            return group
+          }
+        , addReduceDSum : function(field) {
+            fieldPosition = fields[field]
+            var d;
+            group.reduce(
+              function reduceAdd(dmap, v) {
+                d = v[fieldPosition]
+                for (p in d){
+                  if (!(p in dmap)){
+                    dmap[p] = d[p]
+                  } else {
+                    dmap[p] += d[p]
+                  }
+                }
+                return dmap;
+              },
+              function reduceRemove(dmap, v) {
+                d = v[fieldPosition]
+                for (p in d){
+                  if (!(p in dmap)){
+                    //dmap[p] = d[p]
+                  } else {
+                    dmap[p] -= d[p]
+                  }
+                }
+                return dmap;
+              },
+              function reduceInitial() {
+                return {};
+              }
+            )
+            //all = group.all()
+            /*d = {}
+            all.forEach(function(d){
+              _.each(d.value, function(val,key){
+                if (!(key in d)){
+                  d[key] = val
+                } else {
+                  d[key] += val
+                }
+              })
+            })
+            */
+            return group
+          }
+        , addReduceAvg : function(field) {
+            var fldPos = fields[field]
+            group.reduce(
+              function reduceAdd(p, v) {
+                p.ct ++
+                p.t += v[fldPos]
+                return p;
+              },
+              function reduceRemove(p, v) {
+                p.ct --
+                p.t -= v[fldPos]
+                return p;
+              },
+              function reduceInitial() {
+                return {ct:0,t:0};
+              }
+            )
+            all = group.all()
+            all.forEach(function(d){
+              d.value = d.value.t / d.value.ct
+            })
+            return group
+          }
+        , g: function() {
+            return dim.__group()
+          }
+        })
+      }
+      return group
+    }
+
     //console.log("dim =" + dname + " cfname = " + name)
     if (!dim.hasOwnProperty("__group")) {
       // replace original group
