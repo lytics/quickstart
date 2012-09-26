@@ -22,21 +22,29 @@ go clean && go build
 
 ./datagen -ct 1000 -persec 10  -file demo.json
 
+# spread 1000 events over 3600 seconds (1 hour)
+./datagen -ct 1000 -persec 10  -t 3600 -file demo.json
 
+# spread 10000 events over 1 day
+./datagen -ct 10000 -persec 10  -t 86400 -file demo.json
+
+./datagen -ct 100000 -persec 10  -t 452000 -file si.json
 */
 
 var (
-	maxCt   int
-	perSec  int
-	quiet   bool
-	file    string
-	dataGen *DataGen
+	maxCt     int
+	perSec    int
+	timeFrame int
+	quiet     bool
+	file      string
+	dataGen   *DataGen
 )
 
 func init() {
 	flag.IntVar(&maxCt, "ct", 10, "Total number of events to send")
 	flag.IntVar(&perSec, "persec", 10, "Number of Events per second to send")
 	flag.BoolVar(&quiet, "q", false, "Quiet Logging? (default = verbose)")
+	flag.IntVar(&timeFrame, "t", 0, "TimeFrame:  If this is > 0, spread 'ct' of events over this time frame (seconds) ")
 	flag.StringVar(&file, "file", "datagen.json", "Json File defining data generation definition")
 }
 
@@ -57,10 +65,11 @@ func Send(aid string, data []string) {
 	qs := url.QueryEscape(strings.Join(data, "&"))
 	Debug(dataGen.Url, " body = ", qs, data)
 	buf := bytes.NewBufferString(qs)
-	_, err := http.Post(dataGen.Url, "application/x-www-form-urlencoded", buf)
+	resp, err := http.Post(dataGen.Url, "application/x-www-form-urlencoded", buf)
 	if err != nil {
 		Log(ERROR, err.Error())
 	}
+	resp.Body.Close()
 }
 
 type Field struct {
@@ -98,7 +107,9 @@ func RunDataGen() {
 
 	timer := time.NewTicker(time.Second / time.Duration(perSec))
 
-	totalCt := 0
+	tsStart := time.Now().Unix()
+	secPer := int64(timeFrame / maxCt)
+	var totalCt int64 = 0
 
 	Debugf("Gen Data: maxct=%d persec=%d, file=%s q=%v", maxCt, perSec, file, quiet)
 
@@ -115,11 +126,15 @@ func RunDataGen() {
 					data = append(data, fv)
 				}
 			}
+			if timeFrame > 0 {
+				ts := strconv.FormatInt(tsStart+(totalCt*secPer), 10)
+				data = append(data, "_sts="+ts)
+			}
 			Send("12", data)
 		}()
 
 		totalCt++
-		if totalCt >= maxCt {
+		if totalCt >= int64(maxCt) {
 			timer.Stop()
 			break
 		}
