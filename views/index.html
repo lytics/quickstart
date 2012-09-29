@@ -1,126 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>Quickstart for Lytics.io api usage</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="/bootstrap/css/bootstrap.css" rel="stylesheet">
-    <style type="text/css">
-      body {
-        padding-top: 60px;
-        padding-bottom: 40px;
-      }
-      .sidebar-nav {
-        padding: 9px 0;
-      }
-    </style>
-    <link href="/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-  </head>
-  <body>
+<head>
+  <meta charset="utf-8">
+  <title>Quickstart for Lytics.io api usage</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="/bootstrap/css/bootstrap.css" rel="stylesheet">
+  <style type="text/css">
+    body {
+      padding-top: 60px;
+      padding-bottom: 40px;
+    }
+    .sidebar-nav {
+      padding: 9px 0;
+    }
+    .bignumber {
+      font-size:2.4em;
+    }
+  </style>
+  <link href="/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+  <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+  <!--[if lt IE 9]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+</head>
+<body>
 
-    <div class="navbar navbar-inverse navbar-fixed-top">
-      <div class="navbar-inner">
-        <div class="container-fluid">
-          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </a>
-          <a class="brand" href="#">Lytics Quickstart</a>
-          <div class="nav-collapse collapse">
-            <p class="navbar-text pull-right">
-              <a href="#" class="navbar-link"></a>
-            </p>
-            <ul class="nav">
-              <li class="active"><a href="#">Home</a></li>
-              <!--<li><a href="#about">About</a></li>
-              <li><a href="#contact">Contact</a></li>-->
-            </ul>
-          </div><!--/.nav-collapse -->
+  <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+      <div class="container-fluid">
+        <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </a>
+        <a class="brand" href="#">Lytics Quickstart</a>
+        <div class="nav-collapse collapse">
+          <p class="navbar-text pull-right">
+            <a href="#" class="navbar-link"></a>
+          </p>
+          <ul class="nav">
+            <li class="active"><a href="#">Home</a></li>
+            <!--<li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>-->
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+  </div>
+
+  <div class="container-fluid" id="demoViz">
+    <div class="row-fluid">
+      <div class="span2">
+        <div class="well sidebar-nav">
+          <ul class="nav nav-list">
+            <li class="nav-header">Visualizations</li>
+            <li class="active"><a href="#dashboard">Morris.JS</a></li>
+            <li><a href="#">Rickshaw</a></li>
+            <li><a href="#">D3</a></li>
+            <li><a href="#">Multi-Dimensional D3</a></li>
+            <li class="nav-header">Personalizations</li>
+            <li><a href="#">Personalization</a></li>
+            <li><a href="#">Link</a></li>
+            <li><a href="#">Link</a></li>
+          </ul>
+        </div><!--/.well -->
+      </div><!--/span-->
+      <div class="span10">
+        <div class="row-fluid">
+          <div class="span6">
+            <h2>Morris.JS</h2>
+            <p>Example Graph in Morris.js</p>
+            <div id="morris1"></div>
+          </div>
+          <div class="span6">
+            <h2>Morris (Ct)</h2>
+            <p>Example Graph of Count</p>
+            <div id="morrisct"></div>
+          </div>
         </div>
+        <div class="row-fluid">
+          <div class="span6">
+            <h2>Rollup Time-series</h2>
+            <p>Given a time-series of data, rollup values to single value</p>
+            <div class="well bignumber" id='totProductLike'>Product Likes </div>
+          </div>
+          <div class="span6">
+           
+          </div>
+        </div>
+
       </div>
     </div>
 
-    <div class="container-fluid" id="demoViz">
-      <div class="row-fluid">
-        <div class="span2">
-          <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-              <li class="nav-header">Visualizations</li>
-              <li class="active"><a href="#dashboard">Morris.JS</a></li>
-              <li><a href="#">Rickshaw</a></li>
-              <li><a href="#">D3</a></li>
-              <li><a href="#">Multi-Dimensional D3</a></li>
-              <li class="nav-header">Personalizations</li>
-              <li><a href="#">Personalization</a></li>
-              <li><a href="#">Link</a></li>
-              <li><a href="#">Link</a></li>
-            </ul>
-          </div><!--/.well -->
-        </div><!--/span-->
-        <div class="span10">
-          <div class="row-fluid">
-            <div class="span6">
-              <h2>Morris.JS</h2>
-              <p>Example Graph in Morris.js</p>
-              <div id="morris1"></div>
-            </div>
-            <div class="span6">
-              <h2>Morris (Ct)</h2>
-              <p>Example Graph of Count</p>
-              <div id="morrisct"></div>
-            </div>
-          </div><!--/row-->
-          <!--<div class="row-fluid">
-            <div class="span4">
-              <h2>Heading</h2>
-              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-              <p><a class="btn" href="#">View details &raquo;</a></p>
-            </div>
-            <div class="span4">
-              <h2>Heading</h2>
-              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-              <p><a class="btn" href="#">View details &raquo;</a></p>
-            </div>
-            <div class="span4">
-              <h2>Heading</h2>
-              <p>Donec id elit non mi porta gravida at eget metus. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Donec sed odio dui. </p>
-              <p><a class="btn" href="#">View details &raquo;</a></p>
-            </div>
-          </div>-->
-        </div>
-      </div>
+    <hr>
 
-      <hr>
+    <footer>
+      <p>Lytics.io demo</p>
+    </footer>
 
-      <footer>
-        <p>Lytics.io demo</p>
-      </footer>
+  </div>
 
-    </div><!--/.fluid-container-->
+  <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script> 
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.1/jquery.min.js"><\/script>')</script>
+  <script src="/bootstrap/js/bootstrap.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.0.2/require.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.1/underscore-min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js"></script>    
+  <script src="//cdnjs.cloudflare.com/ajax/libs/d3/2.10.0/d3.v2.min.js"></script>    
+  <script src="/js/crossfilter.min.js"></script>
+  
+  <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.2.9/morris.min.js"></script>    
+  <script src="/js/lio.js"></script>
+  <script>  
+    var TIMESPAN = "30d"
+    lio.init({"cid":"15"})// 15 = demo
+  </script>
+  <script src="/js/data.js"></script>
+  <script>
 
-    <script src="//cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script> 
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.8.1/jquery.min.js"><\/script>')</script>
-    <script src="/bootstrap/js/bootstrap.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/require.js/2.0.2/require.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.3.1/underscore-min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/0.9.2/backbone-min.js"></script>    
-    <script src="//cdnjs.cloudflare.com/ajax/libs/d3/2.10.0/d3.v2.min.js"></script>    
-    <script src="/js/crossfilter.min.js"></script>
-    
-    <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.2.9/morris.min.js"></script>    
-    <script src="/js/lio.js"></script>
-    <script>  
-      var TIMESPAN = "30d"
-      lio.init({"cid":"15"})// 15 = demo
-    </script>
-    <script src="/js/data.js"></script>
-    <script src="/js/viz.js"></script>   
-    
-  </body>
+    lio.api.getc('q/summary', {limit:10}, function(json){
+      var data = {}
+        , fields
+        , dshape
+        , eshape
+        , formatDate = d3.time.format("%B %d, %Y")
+
+      dshape  = jsonShaper(json)
+      
+      fields = dshape.fields()
+      
+      // Assuming we have a multi-dimensional query or are going to ignore dimensions and group by date 
+      data.date = dshape.dimension("period", function(d) { return d[fields["_ts"]].ts * 1000; })
+      
+      // for data that was aggregated using Distinct, we have to treat it a little differently
+      // we do addReduceDSum (Distinct Sum) 
+      // we want to save this self.d.sna now because we will use it later if we filter data
+      data.social = data.date.group().addReduceDSum("social")
+      // Then we flatten it for morris.js which returns 
+      //   {keys:["each","keyval","value"],rows[{"key":1234,each:val,keyval:val}]}
+      // this will be called each time we interact/filter the graph 
+      data.snadata = data.social.ds().fo().out()  
+      //console.log(data.snadata)
+      // draw morris graph
+      Morris.Line({
+        element: 'morris1'
+        , data: data.snadata.rows
+        , xkey: 'key'
+        , ykeys: data.snadata.keys
+        , labels: data.snadata.keys
+        , dateFormat: function(x) {return formatDate(new Date(x)); }
+      });
+
+      // simpler one, 
+      data.views = data.date.group().addReduceSum("ct")
+      // format data to fformat morris.js understands
+      //   [{t:1234444,"1":value}]
+      var viewct = data.views.ds().too1().out()  
+      //console.log(viewct)
+      Morris.Line({
+        element: 'morrisct',
+        data: viewct,
+        xkey: 't',
+        ykeys: ['1'],
+        labels: ['Total Ct']
+      });
+
+      // creating an empty dimension means "roll them all up", used for totals, not time series
+      eshape  = jsonShaper(json,['social'])  //,'action','network'
+      data.all = eshape.dimension("all", function(d) { return "" })
+      data.allshares = data.all.group().addReduceSum("product_like")
+      var d = data.allshares.ds().all().out()
+      if (d && d[0] && d[0].value) {
+        $("#totProductLike").append(d[0].value)
+      }
+
+    });
+
+  </script>   
+  
+<!-- start jstag  -->
+<script type="text/javascript">
+window.jstag=function(e){var t=!1,n=window,r=document,i="/static/io",s=Array.prototype.slice,o=e.url||"";return n.jstag||{load:function(){var e,s=r.getElementsByTagName("script")[0];return t=!0,"JSON"in n&&Array.prototype.forEach||(i+="w"),r.getElementById(i)?this:(e=r.createElement("script"),e.id=i,e.src=o+i+".js",s.parentNode.insertBefore(e,s),this)},_q:[],_c:e,bind:function(e){this._q.push([e,s.call(arguments,1)])},ready:function(){this._q.push(["ready",s.call(arguments)])},send:function(){return t||this.load(),this._q.push(["ready","send",s.call(arguments)]),this},ts:(new Date).getTime()}
+}({cid:"15",url:"//localhost:8133"}).send({category:"morris.js"});
+</script>
+<!-- end Lytics.io js -->
+</body>
 </html>

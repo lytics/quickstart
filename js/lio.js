@@ -141,7 +141,6 @@
     if (!lio.config.id && lio.config.cid) {
       lio.config.id = lio.config.cid
     }
-    console.log(o)
   }
   if ('_c' in lio) connect(lio._c)
 

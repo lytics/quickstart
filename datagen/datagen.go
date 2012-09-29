@@ -28,7 +28,7 @@ go clean && go build
 # spread 10000 events over 1 day
 ./datagen -ct 10000 -persec 10  -t 86400 -file demo.json
 
-./datagen -ct 100000 -persec 10  -t 452000 -file si.json
+./datagen -ct 10000 -persec 20  -t 452000 -file si.json
 */
 
 var (
@@ -107,11 +107,12 @@ func RunDataGen() {
 
 	timer := time.NewTicker(time.Second / time.Duration(perSec))
 
-	tsStart := time.Now().Unix()
-	secPer := int64(timeFrame / maxCt)
+	tsStart := time.Now().Unix() - int64(timeFrame)
+	secPer := float64(timeFrame) / float64(maxCt)
+	Logf(WARN, "Timeframe=%d  maxct=%d  secPer=%v", timeFrame, maxCt, secPer)
 	var totalCt int64 = 0
 
-	Debugf("Gen Data: maxct=%d persec=%d, file=%s q=%v", maxCt, perSec, file, quiet)
+	Logf(ERROR, "Gen Data: maxct=%d persec=%d, secPer=%v, file=%s q=%v", maxCt, perSec, secPer, file, quiet)
 
 	for _ = range timer.C {
 		go func() {
@@ -127,7 +128,7 @@ func RunDataGen() {
 				}
 			}
 			if timeFrame > 0 {
-				ts := strconv.FormatInt(tsStart+(totalCt*secPer), 10)
+				ts := strconv.FormatInt(tsStart+int64(float64(totalCt)*secPer), 10)
 				data = append(data, "_sts="+ts)
 			}
 			Send("12", data)

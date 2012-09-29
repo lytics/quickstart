@@ -1,27 +1,56 @@
 /**
- * lio.data
+ * liodata
+ * Depends on underscore.js
+ * 
  */  
-(function(lio,doc,win){
+(function(doc,win,context){
 
-lio.dayOfWeek =  {"0":"Sun", "1":"Mon", "2":"Tue","3":"Wed","4":"Thur","5":"Fri","6":"Sat"}
+  var as = Array.prototype.slice
+    , otostr = Object.prototype.toString
+    , dayOfWeek =  {"0":"Sun", "1":"Mon", "2":"Tue","3":"Wed","4":"Thur","5":"Fri","6":"Sat"}
+    
+context = context ? context : win;
+
+function isFn(it){return otostr.call(it) === "[object Function]"}
+function isObject(it){return otostr.call(it) === "[object Object]"}
+function isString(it){return otostr.call(it) === "[object String]"}
+function isArray(it){return otostr.call(it) === "[object Array]"}
+
 /**
- * dataWrapper, creates a crossfilter from a LIO api call
+ * the classic extend
+ * @param target
+ * @param source
+ * @param overwrite (bool, optional) to overwrite
+ *   target with source properties default = false.
+ * @returns target
+*/
+function extend(target, source,overwrite){
+  if (!source) return target;
+  for (p in source){
+    if (source.hasOwnProperty(p) && (!(p in target) || overwrite)){
+      target[p] = source[p]
+    }
+  }
+  return target;
+}
+
+/**
+ * jsonWrapper, creates a crossfilter from a Lytics Json Object
  * o = options:  
  *   if string:  field to grab
- *   if array:  list of fields to explode
- *    {field: fieldto expand
- *      , explode:  list of fields to explode
- *      , keep: ["topurls"]
- *    }
+ *   if array:  list of fields to explode (from distinct object, to part of array)
 */
 function jsonShaper(json, o, keep){
   var ts = null
     , ds = []
+    , rd 
+    , tot = 0
     , group 
     , row = {}
     , newv
     , meta = {}
     , fieldCt = 1
+    , fieldi = 0
     , fields = {}
     , dim;
 
@@ -37,16 +66,22 @@ function jsonShaper(json, o, keep){
     }
     meta.measures.forEach(function(r,i){
       r.i = i
-      fields[r.As] = i + fieldCt
+      fields[r.As] = fieldCt //i + fieldCt
+      fieldCt ++
     })
-    fields["_ts"] = fieldCt + meta.measures.length
+    fields["_ts"] = fieldCt // + meta.measures.length
+    fieldCt ++
   }
 
 
-  if (lio.isString(o)){
+  if (isString(o)){
     o = {field:fields[o]}
-  } else if (lio.isArray(o)){
-    o = {explode:o}
+  } else if (isArray(o)){
+    o = {explode:o,keys:{},expi:[]}
+    o.explode.forEach(function(key,i){
+      fields[key + "_tot"] = fieldCt 
+      fieldCt ++
+    })
   } else if (arguments.length == 1) {
     o = {}
   }
@@ -65,7 +100,7 @@ function jsonShaper(json, o, keep){
     ds.push(newv)
   }
   function flattenObj(newv, ts){
-    if (lio.isArray(newv)){
+    if (isArray(newv)){
       newv.forEach(function(r,ri){
         for (p in r){
           ds.push({"_ts":ts,"value":r[p],"key":p})
@@ -85,13 +120,13 @@ function jsonShaper(json, o, keep){
           d.rows.forEach(function(r,ri){
             if (o.field < r.length){
               newv = r[o.field]
-              if (lio.isArray(newv)){
+              if (isArray(newv)){
                 newv.forEach(function(r2,ri){
                   for (p in r2){
                     addrow(r, {"_ts":ts,"value":r2[p],"key":p})
                   }
                 })
-              } else if (lio.isObject(newv)){
+              } else if (isObject(newv)){
                 _.each(newv, function(v,n){
                     addrow(r, {"_ts":ts,"value":v,"key":n})
                 })
@@ -104,7 +139,27 @@ function jsonShaper(json, o, keep){
             }
           })
         } else if (o.explode) {
-          console.log("not implemented")
+          d.rows.forEach(function(r,ri){
+            r.push(ts)
+            o.explode.forEach(function(fk, fki){
+              rd = r[fields[fk]]
+              if (rd) {
+                tot = 0
+                for (p in rd) {
+                  if (!(p in o.keys)) {
+                    o.keys[p] = p 
+                    fields[p] = fieldCt 
+                    fieldCt ++
+                  }
+                  tot += rd[p]
+                  //fieldi = fields[p]
+                  r[fields[p]] = rd[p]
+                }
+                r[fields[fk+"_tot"]] = tot
+              }
+            }) 
+            ds.push(r)
+          })
         } else {
           d.rows.forEach(function(r,ri){
             r.push(ts)
@@ -121,9 +176,10 @@ function jsonShaper(json, o, keep){
       }
     })
   }
+  //console.log(ds)
   return cfHelper(ds,o.field, fields)
 }
-lio['jsonShaper'] = jsonShaper
+context['jsonShaper'] = jsonShaper
 
 var shaperId = 0
   , cfhelperId = 0
@@ -143,7 +199,7 @@ function cfHelper(ds, name, fields){
 
     if (arguments.length == 2) {
       dim = cf.__dimension(fn)
-    } else if (arguments.length == 1 && lio.isFn(dname)) {
+    } else if (arguments.length == 1 && isFn(dname)) {
       dim = cf.__dimension(dname)
     } else {
       dim = cf.__dimension()
@@ -154,7 +210,7 @@ function cfHelper(ds, name, fields){
         , group = dim.__group()
       if (!group.hasOwnProperty("addReduceSum")) {
         // replace original group
-        group = lio.extend(group,{
+        group = extend(group,{
           ds: function() {
             if (!group.hasOwnProperty("_ds")){
               //console.log("creating shaper for " + cf.idx + " name= " + name)
@@ -171,9 +227,9 @@ function cfHelper(ds, name, fields){
             return group
           }
         , addReduceSum : function(field) {
-            var fldPos = fields[field]
+            var fldPos = fields[field], fv
             group.reduceSum(function(d) {
-              return d[fldPos];
+              return d[fldPos] ? d[fldPos] : 0;
             })
             return group
           }
@@ -288,9 +344,9 @@ function cfHelper(ds, name, fields){
   return cf
 }
 
-lio['cfHelper'] = cfHelper
+context['cfHelper'] = cfHelper
 
-lio["odiv"] = function(a,b) {
+context["odiv"] = function(a,b) {
   var c = []
   _.each(a,function(row,i){
     //{x:i.toString(), "1": d.value, "t":d.key}
@@ -327,7 +383,7 @@ function dataShaper(group,raw, fields){
     all.forEach(function(d){
       if (!d.hasOwnProperty("length")){
         val = d[fld];
-        if (lio.isObject(val)){
+        if (isObject(val)){
           console.log("not implemented")
           out.push(val);
         } else {
@@ -335,7 +391,7 @@ function dataShaper(group,raw, fields){
         }
       } else if (d.length > field){
         val = d[field];
-        if (lio.isObject(val)){
+        if (isObject(val)){
           console.log("not implemented")
           out.push(val);
         } else {
@@ -417,7 +473,7 @@ function dataShaper(group,raw, fields){
   shaper.atoo = function() {
     var out = [], row;
     data.forEach(function(d, xct){
-      if (lio.isArray(d)){
+      if (isArray(d)){
         row = {"x":xct.toString()}
         d.forEach(function(v,i){
           row[i.toString()] = v
@@ -470,7 +526,7 @@ function dataShaper(group,raw, fields){
     }
     all = group.all()
     all.forEach(function(d, xct){
-      if (lio.isArray(d)){
+      if (isArray(d)){
         row = {"x":xct}  //, "t":d["_ts"].ts
         if ("_ts" in d) row["t"] = d["_ts"].ts * 1000
         d.forEach(function(v,i){
@@ -492,6 +548,7 @@ function dataShaper(group,raw, fields){
     data = out
     return shaper
   };
+  // Pick a speciic column
   shaper.pickCol = function(col) {
     var out = [];
     data.forEach(function(d){
@@ -501,7 +558,7 @@ function dataShaper(group,raw, fields){
     return shaper
   };
   shaper.slice = function(s,ct) {
-    if (lio.isArray(data) && data.length > ct) {
+    if (isArray(data) && data.length > ct) {
       return data.slice(s,ct)
     } else {
       return data
@@ -515,7 +572,7 @@ function dataShaper(group,raw, fields){
     all.forEach(function(d){
       if (d.hasOwnProperty(field)){
         val = d[field];
-        if (lio.isObject(val)){
+        if (isObject(val)){
           sm = 0
           for (p in val){
             sm += val[p]
@@ -528,6 +585,6 @@ function dataShaper(group,raw, fields){
   };
   return shaper
 }
-lio['dataShaper'] = dataShaper
+context['dataShaper'] = dataShaper
 
-})(lio,document,window);
+})(document,window);

@@ -19,18 +19,19 @@ app.configure(function(){
   app.use(express.static(__dirname + '/css'));
   app.use(express.static(__dirname + '/images'));
   app.use(express.static(__dirname + '/js'));
+  app.use(express.static(__dirname + '/views'));
   app.use(express.static(__dirname + '/'));// also allow serving /views/page.html statically
-  app.set('views', __dirname + '/views');
-  app.register('html', require('ejs'));
-  app.set('view engine', 'html');
-  app.enable("jsonp callback");
-  app.use(express.cookieParser());
+  //app.set('views', __dirname + '/views');
+  //app.register('html', require('ejs'));
+  //app.set('view engine', 'html');
+  //app.enable("jsonp callback");
+  //app.use(express.cookieParser());
 });
 // set default layout, combined with above register "html" causes layout.html to be view
 //app.locals.layout = 'layout';
-
+/*
 app.get('/', function(req, res){
   res.render('index',{layout:false});
 });
-
-app.listen(8022);
+*/
+app.listen(8044);
