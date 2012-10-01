@@ -110,79 +110,80 @@
   <script src="//cdnjs.cloudflare.com/ajax/libs/d3/2.10.0/d3.v2.min.js"></script>    
   <script src="/js/crossfilter.min.js"></script>
   
-  <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.2.9/morris.min.js"></script>    
-  <script src="/js/lio.js"></script>
-  <script>  
-    var TIMESPAN = "30d"
-    lio.init({"cid":"15"})// 15 = demo
-  </script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/morris.js/0.3.0/morris.min.js"></script>    
   <script src="/js/data.js"></script>
   <script>
+    $(document).ready(function(){
+      $.ajax({
+        url: "http://localhost:8133/api/15/summary",
+        dataType: 'jsonp',
+        data: {limit:10},
+        success: function(json){
+          console.log(json)
 
-    lio.api.getc('q/summary', {limit:10}, function(json){
-      var data = {}
-        , fields
-        , dshape
-        , eshape
-        , formatDate = d3.time.format("%B %d, %Y")
+          var data = {}
+            , fields
+            , dshape
+            , eshape
+            , formatDate = d3.time.format("%B %d, %Y")
 
-      dshape  = jsonShaper(json)
-      
-      fields = dshape.fields()
-      
-      // Assuming we have a multi-dimensional query or are going to ignore dimensions and group by date 
-      data.date = dshape.dimension("period", function(d) { return d[fields["_ts"]].ts * 1000; })
-      
-      // for data that was aggregated using Distinct, we have to treat it a little differently
-      // we do addReduceDSum (Distinct Sum) 
-      // we want to save this self.d.sna now because we will use it later if we filter data
-      data.social = data.date.group().addReduceDSum("social")
-      // Then we flatten it for morris.js which returns 
-      //   {keys:["each","keyval","value"],rows[{"key":1234,each:val,keyval:val}]}
-      // this will be called each time we interact/filter the graph 
-      data.snadata = data.social.ds().fo().out()  
-      //console.log(data.snadata)
-      // draw morris graph
-      Morris.Line({
-        element: 'morris1'
-        , data: data.snadata.rows
-        , xkey: 'key'
-        , ykeys: data.snadata.keys
-        , labels: data.snadata.keys
-        , dateFormat: function(x) {return formatDate(new Date(x)); }
+          dshape  = jsonShaper(json)
+          
+          fields = dshape.fields()
+          
+          // Assuming we have a multi-dimensional query or are going to ignore dimensions and group by date 
+          data.date = dshape.dimension("period", function(d) { return d[fields["_ts"]].ts * 1000; })
+          
+          // for data that was aggregated using Distinct, we have to treat it a little differently
+          // we do addReduceDSum (Distinct Sum) 
+          // we want to save this self.d.sna now because we will use it later if we filter data
+          data.social = data.date.group().addReduceDSum("social")
+          // Then we flatten it for morris.js which returns 
+          //   {keys:["each","keyval","value"],rows[{"key":1234,each:val,keyval:val}]}
+          // this will be called each time we interact/filter the graph 
+          data.snadata = data.social.ds().fo().out()  
+          //console.log(data.snadata)
+          // draw morris graph
+          Morris.Line({
+            element: 'morris1'
+            , data: data.snadata.rows
+            , xkey: 'key'
+            , ykeys: data.snadata.keys
+            , labels: data.snadata.keys
+            , dateFormat: function(x) {return formatDate(new Date(x)); }
+          });
+
+          // simpler one, 
+          data.views = data.date.group().addReduceSum("ct")
+          // format data to fformat morris.js understands
+          //   [{t:1234444,"1":value}]
+          var viewct = data.views.ds().too1().out()  
+          //console.log(viewct)
+          Morris.Line({
+            element: 'morrisct',
+            data: viewct,
+            xkey: 't',
+            ykeys: ['1'],
+            labels: ['Total Ct']
+          });
+
+          // creating an empty dimension means "roll them all up", used for totals, not time series
+          eshape  = jsonShaper(json,['social'])  //,'action','network'
+          data.all = eshape.dimension("all", function(d) { return "" })
+          data.allshares = data.all.group().addReduceSum("product_like")
+          var d = data.allshares.ds().all().out()
+          if (d && d[0] && d[0].value) {
+            $("#totProductLike").append(d[0].value)
+          }
+        }
       });
-
-      // simpler one, 
-      data.views = data.date.group().addReduceSum("ct")
-      // format data to fformat morris.js understands
-      //   [{t:1234444,"1":value}]
-      var viewct = data.views.ds().too1().out()  
-      //console.log(viewct)
-      Morris.Line({
-        element: 'morrisct',
-        data: viewct,
-        xkey: 't',
-        ykeys: ['1'],
-        labels: ['Total Ct']
-      });
-
-      // creating an empty dimension means "roll them all up", used for totals, not time series
-      eshape  = jsonShaper(json,['social'])  //,'action','network'
-      data.all = eshape.dimension("all", function(d) { return "" })
-      data.allshares = data.all.group().addReduceSum("product_like")
-      var d = data.allshares.ds().all().out()
-      if (d && d[0] && d[0].value) {
-        $("#totProductLike").append(d[0].value)
-      }
-
-    });
-
+    })
   </script>   
   
 <!-- start jstag  -->
 <script type="text/javascript">
 window.jstag=function(e){var t=!1,n=window,r=document,i="/static/io",s=Array.prototype.slice,o=e.url||"";return n.jstag||{load:function(){var e,s=r.getElementsByTagName("script")[0];return t=!0,"JSON"in n&&Array.prototype.forEach||(i+="w"),r.getElementById(i)?this:(e=r.createElement("script"),e.id=i,e.src=o+i+".js",s.parentNode.insertBefore(e,s),this)},_q:[],_c:e,bind:function(e){this._q.push([e,s.call(arguments,1)])},ready:function(){this._q.push(["ready",s.call(arguments)])},send:function(){return t||this.load(),this._q.push(["ready","send",s.call(arguments)]),this},ts:(new Date).getTime()}
-}({cid:"15",url:"//localhost:8133"}).send({category:"morris.js"});
+}({stream:"discard", cid:"15",url:"//localhost:8133"}).send({category:"morris.js"});
 </script>
 <!-- end Lytics.io js -->
 </body>

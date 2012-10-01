@@ -24,6 +24,8 @@ go clean && go build
 
 # spread 1000 events over 3600 seconds (1 hour)
 ./datagen -ct 1000 -persec 10  -t 3600 -file demo.json
+# spread 5000 events over 11 minutes
+./datagen -ct 5000 -persec 20  -t 665 -file demo.json
 
 # spread 10000 events over 1 day
 ./datagen -ct 10000 -persec 10  -t 86400 -file demo.json

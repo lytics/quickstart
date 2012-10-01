@@ -45,6 +45,7 @@ function jsonShaper(json, o, keep){
     , ds = []
     , rd 
     , tot = 0
+    , format = "csv"
     , group 
     , row = {}
     , newv
@@ -54,7 +55,7 @@ function jsonShaper(json, o, keep){
     , fields = {}
     , dim;
 
-  if (json && json.meta && json.meta.measures) {
+  if (json && json.meta && json.meta.measures && json.meta.format != "json") {
     meta = json.meta
     if (meta.dimensions && meta.dimensions.length > 0) {
       meta.dimensions.forEach(function(d,i){
@@ -71,6 +72,27 @@ function jsonShaper(json, o, keep){
     })
     fields["_ts"] = fieldCt // + meta.measures.length
     fieldCt ++
+  } else if (json &&  json.meta && json.meta.format == "json") {
+    format = "json"
+    // these are fields that are pure json, no measures/metrics in meta
+    if (json && json.data && json.data.length) {
+      var maxCt = json.data.length > 2 ? json.data.length - 2 : 0,
+        d = null;
+      fields["_ts"] = "_ts" 
+      for (var i = json.data.length - 1; i >= maxCt; i--) {
+        d = json.data[i]
+        if ('rows' in d) {
+          d.rows.forEach(function(r,ri){
+            if (isObject(r)) {
+              for(p in r) {
+                fields[p] = p 
+                fieldCt ++
+              }
+            }
+          })
+        } 
+      };
+    }
   }
 
 
@@ -158,6 +180,11 @@ function jsonShaper(json, o, keep){
                 r[fields[fk+"_tot"]] = tot
               }
             }) 
+            ds.push(r)
+          })
+        } else if (format == "json"){
+           d.rows.forEach(function(r,ri){
+            r["_ts"] = ts
             ds.push(r)
           })
         } else {
@@ -448,7 +475,7 @@ function dataShaper(group,raw, fields){
     data = out
     return shaper
   };
-  // Object To Array   with array [key,value] format
+  // Takes an array of objects and converts Objects To Array   with array [key,value] format
   shaper.otoa = function() {
     var out = [];
     all = group.all()
