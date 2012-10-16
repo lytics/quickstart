@@ -31,23 +31,33 @@ go clean && go build
 ./datagen -ct 10000 -persec 10  -t 86400 -file demo.json
 
 ./datagen -ct 10000 -persec 20  -t 452000 -file si.json
+
+# use a different timezone
+./datagen -ct 10000 -persec 20  -tz 8 -t 452000 -file si.json
 */
 
 var (
 	maxCt     int
 	perSec    int
+	extraCt   int
 	timeFrame int
+	timeZone  int
 	quiet     bool
 	file      string
+	timeStart string
 	dataGen   *DataGen
 )
 
 func init() {
+	flag.IntVar(&timeZone, "tz", 7, "Time Zone")
 	flag.IntVar(&maxCt, "ct", 10, "Total number of events to send")
+	flag.IntVar(&extraCt, "ex", 100, "Extra Number of events to send after 'done'")
 	flag.IntVar(&perSec, "persec", 10, "Number of Events per second to send")
 	flag.BoolVar(&quiet, "q", false, "Quiet Logging? (default = verbose)")
 	flag.IntVar(&timeFrame, "t", 0, "TimeFrame:  If this is > 0, spread 'ct' of events over this time frame (seconds) ")
 	flag.StringVar(&file, "file", "datagen.json", "Json File defining data generation definition")
+	flag.StringVar(&timeStart, "start", "", "Time to start the time-stamps (format:   2012-08-15 ) else default to now - TimeFrame")
+	rand.Seed(time.Now().Unix())
 }
 
 func LoadDataGen() bool {
@@ -63,7 +73,7 @@ func LoadDataGen() bool {
 	return false
 }
 
-func Send(aid string, data []string) {
+func Send(data []string) {
 	qs := url.QueryEscape(strings.Join(data, "&"))
 	Debug(dataGen.Url, " body = ", qs, data)
 	buf := bytes.NewBufferString(qs)
@@ -94,9 +104,9 @@ func (d *Field) Val() string {
 		return d.Values[rv]
 	} else if d.Cardinality > 0 {
 		ri := rand.Int63n(int64(d.Cardinality))
-		if d.Datatype == "s" {
+		if d.Datatype == "s" || d.Datatype == "string" {
 			return "xyz" + strconv.FormatInt(int64(ri), 10)
-		} else if d.Datatype == "i" {
+		} else if d.Datatype == "i" || d.Datatype == "int" {
 			return strconv.FormatInt(int64(ri), 10)
 		} else if d.Datatype == "x" {
 
@@ -109,11 +119,21 @@ func RunDataGen() {
 
 	timer := time.NewTicker(time.Second / time.Duration(perSec))
 
-	tsStart := time.Now().Unix() - int64(timeFrame)
+	tn := time.Now()
+	if len(timeStart) > 0 {
+		if dt, err := time.Parse("2006-01-02", timeStart); err == nil {
+			tn = dt
+		} else {
+			Log(ERROR, err)
+		}
+	}
+	t1 := time.Date(tn.Year(), tn.Month(), tn.Day(), timeZone, 0, 0, 0, time.UTC)
+	tsStart := t1.Unix() - int64(timeFrame)
+	//tsStart := time.Date(2006, 1, 2, 0, 0, 0, 0, time.UTC)
+	//t1 := time.Date(2006, 1, -2, 0, 0, 0, 0, time.UTC)
 	secPer := float64(timeFrame) / float64(maxCt)
-	Logf(WARN, "Timeframe=%d  maxct=%d  secPer=%v", timeFrame, maxCt, secPer)
+	Logf(WARN, "Timeframe=%d  maxct=%d  secPer=%v start=%v", timeFrame, maxCt, secPer, t1)
 	var totalCt int64 = 0
-
 	Logf(ERROR, "Gen Data: maxct=%d persec=%d, secPer=%v, file=%s q=%v", maxCt, perSec, secPer, file, quiet)
 
 	for _ = range timer.C {
@@ -130,14 +150,16 @@ func RunDataGen() {
 				}
 			}
 			if timeFrame > 0 {
-				ts := strconv.FormatInt(tsStart+int64(float64(totalCt)*secPer), 10)
+				tsi := tsStart + int64(float64(totalCt)*secPer)
+				ts := strconv.FormatInt(tsi, 10)
 				data = append(data, "_sts="+ts)
+				Logf(WARN, "ts=%s   %v", ts, time.Unix(tsi, 0))
 			}
-			Send("12", data)
+			Send(data)
 		}()
 
 		totalCt++
-		if totalCt >= int64(maxCt) {
+		if totalCt >= int64(maxCt+extraCt) {
 			timer.Stop()
 			break
 		}
