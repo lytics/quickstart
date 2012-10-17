@@ -261,8 +261,9 @@ function cfHelper(ds, name, fields){
             return group
           }
         , addReduceDSum : function(field) {
-            fieldPosition = fields[field]
-            var d;
+            var fieldPosition = fields[field]
+              , d
+              , p;
             group.reduce(
               function reduceAdd(dmap, v) {
                 d = v[fieldPosition]
