@@ -76,22 +76,22 @@ function jsonShaper(json, o, keep){
     format = "json"
     // these are fields that are pure json, no measures/metrics in meta
     if (json && json.data && json.data.length) {
-      var maxCt = json.data.length > 2 ? json.data.length - 2 : 0,
-        d = null;
+      var d = null, fieldKeys = [];
       fields["_ts"] = "_ts" 
-      for (var i = json.data.length - 1; i >= maxCt; i--) {
+      for (var i = json.data.length - 1; i >= 0; i--) {
         d = json.data[i]
         if ('rows' in d) {
           d.rows.forEach(function(r,ri){
             if (isObject(r)) {
               for(p in r) {
                 fields[p] = p 
-                fieldCt ++
               }
             }
           })
         } 
       };
+      fieldKeys = _.keys(fields)
+      fieldCt = fieldKeys.length
     }
   }
 
